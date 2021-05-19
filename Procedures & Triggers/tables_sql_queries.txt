@@ -1,0 +1,39 @@
+create sequence order_product_seq;
+
+create or replace trigger order_product_incre
+before insert on order_product
+for each row
+begin
+  select order_product_seq.nextval
+  into :new.id
+  from dual;
+end;
+
+create table users(id int primary key, email varchar(40) not null unique,password varchar(30) not null,first_name varchar(20),last_name varchar(20),phone_no varchar(10) not null unique);
+
+insert into users values(null,'email','pass','h','m','1234');
+
+
+create table addresses(id int primary key,street varchar(100),house_number varchar(5),zipcode varchar(10),city varchar(100),user_id int references users(id),state varchar(100));
+
+create table companyname(id int primary key,name varchar(100));
+
+create table phone(id int primary key,model_name varchar(200),color varchar(10),company_id int references 
+companyname(id),price float,camera varchar(50),display_size varchar(10),ram varchar(20),internal_memory varchar(20),battery varchar(20));
+
+create table laptop(id int primary key,model_name varchar(200),color varchar(10),company_id int references companyname(id),price float,camera varchar(100),op_system varchar(200),ram varchar(20),hdd varchar(20),battery varchar(20),processor varchar(200));
+
+create table headphone(id int primary key,model_name varchar(200),color varchar(10),company_id int references companyname(id),price float,type varchar(100),battery varchar(100),charging_time_hr varchar(10));
+
+create table ac(id int primary key,model_name varchar(200),color varchar(10),company_id int references companyname(id),price float,type_of_ac varchar(50),capacity varchar(50),annual_energy_consumption varchar(50),voltage varchar(50));
+
+create table tv(id int primary key,model_name varchar(200),company_id int references companyname(id),price float,display_size varchar(100),sound varchar(100),resolution varchar(100));
+
+create table phone_photo(id int primary key,phone_id int references phone(id),path varchar(255),pic blob);
+create table laptop_photo(id int primary key,laptop_id int references laptop(id),pic blob);
+create table headphone_photo(id int primary key,headphone_id int references headphone(id),pic blob);
+create table ac_photo(id int primary key,ac_id int references ac(id),pic blob);
+create table tv_photo(id int primary key,tv_id int references tv(id),pic blob);
+
+create table orders(id int primary key,user_id int references users(id));
+create table order_product(id int primary key,order_id int references orders(id),quantity int,single_price float);
