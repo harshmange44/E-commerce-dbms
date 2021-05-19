@@ -1,0 +1,311 @@
+create or replace procedure search_suggestions as
+cursor c_sugg is
+  select model_name from phone union all select model_name from laptop union all select model_name from headphone union all select model_name from tv union all select model_name from ac;
+r_sugg c_sugg%rowtype;
+begin 
+  open c_sugg;
+  loop
+   fetch c_sugg into r_sugg;
+   exit when c_sugg%notfound;
+   dbms_output.put_line(r_sugg.model_name);
+end loop;
+  close c_sugg;
+end
+-------------------------------------------------
+create or replace procedure laptop_records as
+cursor c is 
+select laptop.id,laptop.model_name,laptop.PRICE, pic.path as image_path, laptop.color as spec1, laptop.op_system as spec2, laptop.processor as spec3 from laptop, laptop_photo pic WHERE laptop.id = pic.laptop_id;
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+--------------------------------------------------------
+create or replace procedure headphone_records as
+cursor c is 
+select headphone.id,headphone.model_name,headphone.PRICE, pic.path as image_path, headphone.color as spec1, headphone.CONNECTIVITY as spec2, headphone.MIC as spec3 from headphone, headphone_photo pic WHERE headphone.id = pic.headphone_id;
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+------------------------------------------------------------
+create or replace procedure ac_records as
+cursor c is 
+select ac.id,ac.model_name,ac.PRICE, pic.path as image_path, ac.color as spec1, ac.CAPACITY as spec2, ac.NOISE_LEVEL as spec3 from ac, ac_photo pic WHERE ac.id = pic.ac_id;
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+-----------------------------------------------------------
+create or replace procedure tv_records as
+cursor c is 
+select tv.id,tv.model_name,tv.PRICE, pic.path as image_path, tv.color as spec1, tv.DISPLAY_SIZE as spec2, tv.RESOLUTION as spec3 from tv, tv_photo pic WHERE tv.id = pic.tv_id;
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+-------------------------------------------------------------------
+
+create or replace procedure search_records (likeFormat varchar, likeFormatReverse varchar) as
+cursor c is 
+(select phone.id,phone.model_name,phone.PRICE, pic.path as image_path, phone.color as spec1, phone.ram as spec2, phone.internal_memory as spec3 from phone, phone_photo pic WHERE phone.id = pic.phone_id and (LOWER(REGEXP_REPLACE(phone.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormat) or LOWER(REGEXP_REPLACE(phone.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormatReverse)) union all select laptop.id,laptop.model_name,laptop.PRICE, pic.path as image_path, laptop.color as spec1, laptop.op_system as spec2, laptop.processor as spec3 from laptop, laptop_photo pic WHERE laptop.id = pic.laptop_id and (LOWER(REGEXP_REPLACE(laptop.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormat) or LOWER(REGEXP_REPLACE(laptop.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormatReverse)) union all select headphone.id,headphone.model_name,headphone.PRICE, pic.path as image_path, headphone.color as spec1, headphone.CONNECTIVITY as spec2, headphone.MIC as spec3 from headphone, headphone_photo pic WHERE headphone.id = pic.headphone_id and (LOWER(REGEXP_REPLACE(headphone.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormat) or LOWER(REGEXP_REPLACE(headphone.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormatReverse)) union all select ac.id,ac.model_name,ac.PRICE, pic.path as image_path, ac.color as spec1, ac.CAPACITY as spec2, ac.NOISE_LEVEL as spec3 from ac, ac_photo pic WHERE ac.id = pic.ac_id and (LOWER(REGEXP_REPLACE(ac.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormat) or LOWER(REGEXP_REPLACE(ac.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormatReverse)) union all select tv.id,tv.model_name,tv.PRICE, pic.path as image_path, tv.color as spec1, tv.DISPLAY_SIZE as spec2, tv.RESOLUTION as spec3 from tv, tv_photo pic WHERE tv.id = pic.tv_id and (LOWER(REGEXP_REPLACE(tv.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormat) or LOWER(REGEXP_REPLACE(tv.MODEL_NAME, '[[:space:]]', '' )) LIKE (likeFormatReverse)));
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+
+
+------------------------------------------------
+
+create or replace procedure add_to_cart(pro_id int, pro_category varchar, user_id int) is
+
+begin
+insert into cart values(null,pro_id,pro_category,user_id);
+end;
+------------------------------------------
+create or replace procedure purchase(u_id int) is
+
+begin
+insert into orders (select null,product_id, table_name, user_id from cart where user_id = u_id);
+delete from cart where user_id = u_id;
+end;
+---------------------------------------------
+create or replace procedure remove_from_cart(pro_id int,u_id int) is
+
+begin
+DELETE FROM cart WHERE product_id = pro_id and user_id = u_id;
+end;
+--------------------------------------------
+create or replace procedure add_user(email varchar, password varchar, first_name varchar, last_name varchar,phone_no varchar) is
+
+begin
+insert into users values(null,email,password,first_name, last_name, phone_no);
+end;
+--------------------------------------------------
+create or replace procedure get_phone_details(pro_id int) as
+cursor c is 
+select phone.MODEL_NAME,phone.COLOR,phone.PRICE,phone.CAMERA, phone.DISPLAY_SIZE,phone.RAM,phone.INTERNAL_MEMORY,phone.BATTERY, image.path from phone, phone_photo image where (phone.id = pro_id and phone.id = image.phone_id);
+r c%rowtype;
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.model_name||','||r.color||','||r.price||','||r.camera||','||r.display_size||','||r.ram||','||r.internal_memory||','||r.battery||','||r.path);
+end loop;
+  close c;
+end;
+------------------------------------------------------
+create or replace procedure get_headphone_details(pro_id int) as
+cursor c is 
+select headphone.MODEL_NAME,headphone.COLOR,headphone.PRICE,headphone.HEADPHONES_TYPE, headphone.CONNECTIVITY,headphone.CONNECTOR_TYPE,headphone.MIC,headphone.BATTERY_LIFE, image.path from headphone, headphone_photo image where (headphone.id = pro_id and headphone.id = image.headphone_id);
+r c%rowtype;
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.model_name||','||r.color||','||r.price||','||r.HEADPHONES_TYPE||','||r.CONNECTIVITY||','||r.CONNECTOR_TYPE||','||r.MIC||','||r.BATTERY_LIFE||','||r.path);
+end loop;
+  close c;
+end;
+
+----------------------------------------------------------------
+create or replace procedure get_laptop_details(pro_id int) as
+cursor c is 
+select laptop.MODEL_NAME,laptop.COLOR,laptop.PRICE,laptop.CAMERA, laptop.OP_SYSTEM,laptop.RAM,laptop.HDD,laptop.BATTERY,laptop.PROCESSOR, image.path from laptop, laptop_photo image where (laptop.id = pro_id and laptop.id = image.laptop_id);
+r c%rowtype;
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.model_name||','||r.color||','||r.price||','||r.CAMERA||','||r.OP_SYSTEM||','||r.RAM||','||r.HDD||','||r.BATTERY||','||r.PROCESSOR||','||r.path);
+end loop;
+  close c;
+end;
+----------------------------------------------------------
+
+create or replace procedure get_ac_details(pro_id int) as
+cursor c is 
+select ac.MODEL_NAME,ac.COLOR,ac.PRICE,ac.TYPE_OF_AC, ac.CAPACITY,ac.POWER_CONSUMPTION,ac.VOLTAGE,ac.NOISE_LEVEL,ac.AMBIENT_TEMPERATURE, image.path from ac, ac_photo image where (ac.id = pro_id and ac.id = image.ac_id);
+r c%rowtype;
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.model_name||','||r.color||','||r.price||','||r.TYPE_OF_AC||','||r.CAPACITY||','||r.POWER_CONSUMPTION
+||','||r.VOLTAGE||','||r.NOISE_LEVEL||','||r.AMBIENT_TEMPERATURE||','||r.path);
+end loop;
+  close c;
+end;
+
+---------------------------------------------------------------
+
+create or replace procedure get_tv_details(pro_id int) as
+cursor c is 
+select tv.MODEL_NAME,tv.COLOR,tv.PRICE,tv.SOUND, tv.DISPLAY_SIZE,tv.RESOLUTION,tv.SCREEN_TYPE,tv.SAMRT_TV,tv.THREE_D, image.path from tv, tv_photo image where (tv.id = pro_id and tv.id = image.tv_id);
+r c%rowtype;
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.model_name||','||r.color||','||r.price||','||r.SOUND||','||r.DISPLAY_SIZE||','||r.RESOLUTION
+||','||r.SCREEN_TYPE||','||r.SAMRT_TV||','||r.THREE_D||','||r.path);
+end loop;
+  close c;
+end;
+---------------------------------------------------
+create or replace procedure get_my_orders(u_id int) as
+cursor c is 
+select phone.model_name,phone.price,pic.path as image_path from phone, phone_photo pic WHERE phone.id=pic.phone_id and (phone.id IN (select product_id from orders WHERE table_name= 'phone' and user_id = u_id)) union all select laptop.model_name,laptop.price,pic.path as image_path from laptop, laptop_photo pic WHERE laptop.id=pic.laptop_id and (laptop.id IN (select product_id from orders WHERE table_name= 'laptop' and user_id = u_id)) union all select headphone.model_name,headphone.price,pic.path as image_path from headphone, headphone_photo pic WHERE headphone.id=pic.headphone_id and (headphone.id IN (select product_id from orders WHERE table_name= 'headphone' and user_id = u_id)) union all select tv.model_name,tv.price,pic.path as image_path from tv, tv_photo pic WHERE tv.id=pic.tv_id and (tv.id IN (select product_id from orders WHERE table_name= 'tv' and user_id = u_id)) union all select ac.model_name,ac.price,pic.path as image_path from ac, ac_photo pic, cart WHERE ac.id=pic.ac_id and (ac.id IN (select product_id from orders WHERE table_name= 'ac' and user_id = u_id));
+r c%rowtype;
+begin
+open c;
+loop
+fetch c into r;
+exit when c%notfound;
+dbms_output.put_line(r.model_name||','||r.price||','||r.image_path);
+end loop;
+close c;
+end;
+-----------------------------------------------------------------------------------
+
+create or replace procedure get_cart_products(u_id int) as
+cursor c is 
+select phone.id, cart.table_name,phone.model_name,phone.price,pic.path as image_path from phone, phone_photo pic, cart WHERE (phone.id=pic.phone_id and cart.product_id = phone.id) and (phone.id IN (select product_id from cart WHERE table_name= 'phone' and user_id = u_id)) union all select laptop.id, cart.table_name,laptop.model_name,laptop.price,pic.path as image_path from laptop, laptop_photo pic, cart WHERE (laptop.id=pic.laptop_id and cart.product_id = laptop.id) and (laptop.id IN (select product_id from cart WHERE table_name= 'laptop' and user_id = u_id)) union all select headphone.id, cart.table_name,headphone.model_name,headphone.price,pic.path as image_path from headphone, headphone_photo pic, cart WHERE (headphone.id=pic.headphone_id and cart.product_id = headphone.id) and (headphone.id IN (select product_id from cart WHERE table_name= 'headphone' and user_id = u_id)) union all select tv.id, cart.table_name,tv.model_name,tv.price,pic.path as image_path from tv, tv_photo pic, cart WHERE (tv.id=pic.tv_id and cart.product_id = tv.id) and (tv.id IN (select product_id from cart WHERE table_name= 'tv' and user_id = u_id)) union all select ac.id, cart.table_name,ac.model_name,ac.price,pic.path as image_path from ac, ac_photo pic, cart WHERE (ac.id=pic.ac_id and cart.product_id = ac.id) and (ac.id IN (select product_id from cart WHERE table_name= 'ac' and user_id = u_id));
+r c%rowtype;
+begin
+open c;
+loop
+fetch c into r;
+exit when c%notfound;
+dbms_output.put_line(r.id||','||r.table_name||','||r.model_name||','||r.price||','||r.image_path);
+end loop;
+close c;
+end;
+
+-----------------------------------------------------------------------------------
+
+create or replace procedure phone_records as
+cursor c is 
+select phone.id,phone.model_name,phone.PRICE, pic.path as image_path, phone.color as spec1, phone.ram as spec2, phone.internal_memory as spec3 from phone, phone_photo pic WHERE phone.id = pic.phone_id;
+
+r c%rowtype;
+
+begin 
+  open c;
+  loop
+   fetch c into r;
+   exit when c%notfound;
+   dbms_output.put_line(r.id||','||r.model_name||','||r.price||','||r.image_path||','||r.spec1||','||r.spec2||','||r.spec3);
+end loop;
+  close c;
+end;
+
+
+------------------------------------------
+
+CREATE OR REPLACE TRIGGER signUp_trig
+BEFORE INSERT ON users
+FOR EACH ROW
+DECLARE
+cnt number;
+BEGIN
+
+SELECT  count(*)
+INTO    cnt
+from users
+WHERE (users.email = :NEW.email) OR (users.phone_no = :NEW.phone_no);
+IF (cnt>0) THEN
+        RAISE_APPLICATION_ERROR(-20001,
+        'user already exists');
+    END IF;
+END;
+
+----------------------------------
+create or replace procedure update_password(u_id int,old_pass varchar,new_pass varchar) is
+begin
+    UPDATE users SET PASSWORD = new_pass WHERE users.ID = u_id and users.PASSWORD = old_pass;
+end;
+---------------------------
+create or replace function discount_func(coupon VARCHAR, price float) return int as
+         amt float;
+begin
+if coupon = 'apply10' or coupon='APPLY10' then
+amt:= price - price*10/100;
+elsif coupon = 'apply20' or coupon='APPLY20' then
+amt:= price - price*20/100;
+ELSIF coupon = 'apply30' or coupon='APPLY30' then
+amt:= price - price*30/100;
+else
+amt:=0;
+end if;
+         return amt;
+end;
+------------------------------
+create sequence cart_log_seq;
+----------------------------
+create or replace trigger cart_log_incre
+before insert on cart_log
+for each row
+begin
+  select cart_log_seq.nextval
+  into :new.id
+  from dual;
+end;
+---------------------
+create or replace trigger cart_log_trig
+before insert on cart
+for each row
+declare
+pro_id int;
+u_id int;
+begin
+select product_id into pro_id from cart where id = (select max(id) from cart);
+select user_id into u_id from cart where id = (select max(id) from cart);
+insert into cart_log values(null,u_id,pro_id,(select sysdate from dual));
+end;
+------------------
+create table cart_log(id int primary key,user_id references users(id),product_id int,cartlog_date date);

@@ -1,0 +1,27 @@
+create or replace trigger cart_log_trig
+before insert on cart
+for each row
+declare
+pro_id int;
+u_id int;
+begin
+select product_id into pro_id from cart where id = (select max(id) from cart);
+select user_id into u_id from cart where id = (select max(id) from cart);
+insert into cart_log values(null,u_id,pro_id,(select sysdate from dual));
+end;
+
+create sequence cart_log_seq;
+
+
+create or replace trigger cart_log_incre
+before insert on cart_log
+for each row
+begin
+  select cart_log_seq.nextval
+  into :new.id
+  from dual;
+end;
+
+create table cart_log(id int primary key,user_id references users(id),product_id int,cartlog_date date);
+
+create table order_log(id int primary key,user_id references users(id), product_id int, orderlog_date date);
